@@ -111,6 +111,21 @@ namespace Roommates.Repositories
                 }
             }
         }
+        public void AssignChore(Chore c, Roommate r)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"INSERT INTO RoommateChore (RoommateId, ChoreId)
+                                      VALUES (@roommateId, @choreId)";
+                    cmd.Parameters.AddWithValue("@roommateId", r.Id);
+                    cmd.Parameters.AddWithValue("@choreId", c.Id);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }
 

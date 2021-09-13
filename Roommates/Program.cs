@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Roommates.Repositories;
 using Roommates.Models;
 
@@ -94,11 +95,25 @@ namespace Roommates
                         Console.ReadKey();
                         break;
                     case ("Assign a chore to a roommate"):
+                        List<Chore> allChores = choreRepo.GetAll();
+                        foreach (Chore c in allChores)
+                        {
+                            Console.WriteLine($"Chore # {c.Id}: {c.Name}");
+                        }
+                        Console.WriteLine("Please enter the number of a chore to assign it.");
+                        int choreId = int.Parse(Console.ReadLine());
+                        Chore assignedChore = allChores.FirstOrDefault(c => c.Id == choreId);
                         List<Roommate> allRoommates = roommateRepo.GetAllRoommates();
                         foreach (Roommate r in allRoommates)
                         {
-                            Console.WriteLine($"{r.FirstName}");
+                            Console.WriteLine($"Roommate # {r.Id}: {r.FirstName} {r.LastName}");
                         }
+                        Console.WriteLine($"Please enter the number of a roommate to assign {assignedChore.Name}");
+                        int assignedRoommateId = int.Parse(Console.ReadLine());
+                        Roommate assignedRoommate = allRoommates.FirstOrDefault(r => r.Id == assignedRoommateId);
+                        roommateRepo.AssignChore(assignedChore, assignedRoommate);
+                        Console.WriteLine($"{assignedRoommate.FirstName} {assignedRoommate.LastName} has been assigned: {assignedChore.Name}");
+                        Console.Write("Press any key to continue");
                         Console.ReadKey();
                         break;
                     case ("Exit"):
