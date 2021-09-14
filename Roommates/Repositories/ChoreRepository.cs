@@ -81,10 +81,11 @@ namespace Roommates.Repositories
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = 
-                        "SELECT Chore.Id, Chore.Name " +
-                        "FROM Chore " +
-                        "JOIN RoommateChore ON Chore.Id = RoommateChore.ChoreId";
+                    cmd.CommandText =
+                        @"SELECT Chore.Id, Chore.Name, r.FirstName, r.LastName, r.Id
+                        FROM Chore
+                        JOIN RoommateChore ON Chore.Id = RoommateChore.ChoreId
+                        JOIN Roommate r on RoommateChore.RoommateId = r.Id";
                     SqlDataReader reader = cmd.ExecuteReader();
                     List<Chore> chores = new List<Chore>();
                     while (reader.Read())
@@ -95,15 +96,48 @@ namespace Roommates.Repositories
                         int nameColumnPosition = reader.GetOrdinal("Name");
                         string nameValue = reader.GetString(nameColumnPosition);
 
+                        int firstNamePosition = reader.GetOrdinal("FirstName");
+                        string firstName = reader.GetString(firstNamePosition);
+
+                        int lastNamePosition = reader.GetOrdinal("LastName");
+                        string lastName = reader.GetString(lastNamePosition);
+
+                        int roommateIdPosition = reader.GetOrdinal("r.Id");
+                        int roommateId = reader.GetInt32(roommateIdPosition);
+
                         Chore chore = new Chore
                         {
                             Id = idValue,
-                            Name = nameValue
+                            Name = nameValue,
+                            Assignee = new Roommate
+                            {
+                                FirstName = firstName,
+                                LastName = lastName,
+                                Id = roommateId
+                            }
                         };
                         chores.Add(chore);
                     }
                     return chores;
                 }
+            }
+        }
+        public void ReassignChore(int c, int or, int nr)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                    cmd.CommandText = @"DELETE FROM RommateChore
+                        WHERE RoommateId = @oldRoommateId;
+                        INSERT INTO RoommateChore (ChoreId, RoommateId)
+                        Values (@choreId, @newRoommateId)";
+                    cmd.Parameters.AddWithValue("@oldRoommateId", or);
+                    cmd.Parameters.AddWithValue("@newRoommateId", nr);
+                    cmd.Parameters.AddWithValue("@choreId", c);
+                    cmd.ExecuteNonQuery();
+                    }
             }
         }
         public List<ChoreCount> GetChoreCount()

@@ -10,5 +10,6 @@ namespace Roommates.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public Roommate Assignee { get; set; }
     }
 }
